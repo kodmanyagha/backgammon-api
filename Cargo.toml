@@ -1,0 +1,211 @@
+[package]
+name = "tavla_api"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+doctest = false
+
+[workspace]
+members = [".", "entity", "migration"]
+
+
+[dependencies]
+
+entity = { path = "entity" }
+migration = { path = "migration" }
+tavla_core = { path = "../tavla/crates/core" }
+
+anyhow = { workspace = true }
+
+tokio = { workspace = true }
+reqwest = { workspace = true }
+
+axum = { workspace = true }
+axum-macros = { workspace = true }
+axum-extra = { workspace = true }
+validator = { workspace = true }
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_derive = { workspace = true }
+serde-aux = { workspace = true }
+serde_with = { workspace = true }
+
+strum = { workspace = true }
+strum_macros = { workspace = true }
+
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+uuid = { workspace = true }
+
+clap = { workspace = true }
+parking_lot = { workspace = true }
+
+sea-orm = { workspace = true }
+
+log = { workspace = true }
+dotenvy = { workspace = true }
+
+chrono = { workspace = true }
+derive_builder = { workspace = true }
+tower = { workspace = true }
+tower-http.workspace = true
+bcrypt = { workspace = true }
+jsonwebtoken = { workspace = true }
+once_cell = { workspace = true }
+thiserror = { workspace = true }
+base64 = { workspace = true }
+percent-encoding = { workspace = true }
+rand = { workspace = true }
+sea-query = { workspace = true }
+csv = { workspace = true }
+slug = { workspace = true }
+
+regex.workspace = true
+
+rustls = { workspace = true }
+tokio-stream = { workspace = true }
+futures = { workspace = true }
+futures-util = { workspace = true }
+hmac = { workspace = true }
+sha2 = { workspace = true }
+axum-client-ip = { workspace = true }
+mimetype-detector = { workspace = true }
+
+arc-swap = { workspace = true }
+redis = { workspace = true }
+
+r2d2 = { workspace = true }
+bb8-redis = { workspace = true }
+
+time = { workspace = true }
+indexmap = { workspace = true }
+
+url = { workspace = true }
+async-trait = { workspace = true }
+utoipa = { workspace = true }
+utoipa-swagger-ui = { workspace = true }
+
+
+[workspace.dependencies]
+
+anyhow = "=1.0.104"
+async-trait = "=0.1.92"
+
+tokio = { version = "=1.53.1", features = ["full"] }
+reqwest = { version = "=0.13.5", features = ["default", "json"] }
+
+axum = { version = "=0.8.9", features = ["ws"] }
+axum-macros = "=0.5.1"
+axum-extra = { version = "=0.12.6", features = [
+  "typed-header",
+  "tracing",
+  "form",
+  "query",
+  "multipart",
+] }
+validator = { version = "=0.21.0", features = ["derive"] }
+
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = { version = "=1.0.151", features = ["default"] }
+serde_derive = "=1.0.229"
+serde-aux = "=4.7.0"
+serde_with = "=3.23.0"
+
+strum = { version = "=0.28.0", features = ["derive"] }
+strum_macros = "=0.28.0"
+
+tracing = "=0.1.44"
+tracing-subscriber = { version = "=0.3.23", features = ["env-filter"] }
+
+uuid = { version = "=1.26.1", features = ["serde", "v4"] }
+
+clap = "=4.6.6"
+parking_lot = "=0.12.5"
+
+sea-orm = { version = "=1.1.20", features = [
+  "sqlx-mysql",
+  "postgres-array",
+  "runtime-tokio-rustls",
+  "macros",
+  "debug-print",
+  "mock",
+  "with-chrono",
+  "with-json",
+  "with-rust_decimal",
+] }
+
+log = "=0.4.34"
+dotenvy = "=0.15.7"
+
+chrono = "=0.4.45"
+derive_builder = "=0.20.2"
+tower = { version = "=0.5.3", features = ["util"] }
+tower-http = { version = "=0.7.1", features = ["fs", "trace", "auth", "cors"] }
+bcrypt = "=0.19.3"
+jsonwebtoken = { version = "=11.0.0", features = ["rust_crypto"] }
+once_cell = { version = "=1.21.4", features = [
+  "alloc",
+  "race",
+  "std",
+  "parking_lot",
+] }
+thiserror = "=2.0.20"
+base64 = "=0.23.1"
+percent-encoding = "=2.3.2"
+rand = { version = "=0.10.2", features = ["default"] }
+sea-query = "=1.0.2"
+regex = "=1.13.1"
+
+arc-swap = { version = "=1.9.2" }
+redis = { version = "=1.7.0", features = [
+  "tokio-comp",
+  "aio",
+  "connection-manager",
+] }
+
+csv = "=1.4.0"
+slug = "=0.1.6"
+
+rustls = { version = "=0.23.44", default-features = false, features = [
+  "aws-lc-rs",
+  "logging",
+  "tls12",
+] }
+
+tokio-stream = { version = "=0.1.19", features = ["sync"] }
+futures = "=0.3.34"
+futures-util = "=0.3.34"
+hmac = "=0.13.0"
+sha2 = "=0.11.0"
+aes-gcm = "=0.10.3"
+axum-client-ip = "=1.3.1"
+mimetype-detector = "=0.3.12"
+
+indexmap = "=2.14.2"
+r2d2 = "=0.8.10"
+bb8-redis = "=0.26.0"
+
+time = "=0.3.55"
+
+url = "=2.5.8"
+
+utoipa = { version = "=5.5.0", features = [
+  "chrono",
+  "decimal",
+  "uuid",
+  "axum_extras",
+] }
+utoipa-swagger-ui = { version = "=9.0.2", features = ["axum"] }
+
+
+[[bin]]
+name = "tavla_api"
+path = "src/bin/tavla_api.rs"
+
+
+[[bin]]
+name = "seed"
+path = "src/bin/seed.rs"

@@ -1,0 +1,14 @@
+pub mod game_invites;
+pub mod game_moves;
+pub mod games;
+pub mod permissions;
+pub mod repository;
+pub mod roles;
+pub mod roles_permissions_pivot;
+pub mod scores;
+pub mod system_logs;
+pub mod user_throttles;
+pub mod users;
+pub mod users_permissions_pivot;
+pub mod users_roles_pivot;
+pub mod utils;

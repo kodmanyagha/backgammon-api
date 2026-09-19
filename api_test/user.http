@@ -1,0 +1,88 @@
+#@host = http://localhost:8000
+@host = https://local-8000.host
+
+
+### Get main endpoint
+GET {{host}}
+
+
+### Login user
+POST {{host}}/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "test1",
+  "password": "1q2w3e4r",
+  "captcha": "123456"
+}
+
+
+### Register user with email
+POST {{host}}/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "test1",
+  "password": "1q2w3e4r",
+  "captcha": "123456"
+}
+
+
+### Get my profile details
+GET {{host}}/v1/profile
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhcHAiLCJleHAiOjE3NzI0NjM0MTYsImlhdCI6MTc3MjQwOTQxNiwic3ViIjo0LCJyb2xlcyI6WyJhZG1pbiJdLCJwZXJtcyI6W119.6IB-t_1vLh2RbwfKRSGB3gPz_f1IUo2gxXhyilhd1ZM
+
+
+### Update my profile
+PATCH {{host}}/v1/profile
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhcHAiLCJleHAiOjE3NzI0NjM0MTYsImlhdCI6MTc3MjQwOTQxNiwic3ViIjo0LCJyb2xlcyI6WyJhZG1pbiJdLCJwZXJtcyI6W119.6IB-t_1vLh2RbwfKRSGB3gPz_f1IUo2gxXhyilhd1ZM
+
+{
+  "firstname": "Admin",
+  "lastname": "Admin"
+}
+
+
+### Get bulk sms reports
+GET {{host}}/v1/bulk-sms/reports?start=0&length=10
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhcHAiLCJleHAiOjE3NzI0MDczNjgsImlhdCI6MTc3MjM4OTM2OCwic3ViIjo0LCJwZXJtcyI6W10sInJvbGVzIjpbImFkbWluIl0sImdyb3VwcyI6WyJhZG1pbiJdfQ.-vDVRAH0xpZq4UNQdpAOU4RX2J5vriqcFjCvCWlruRo
+
+
+### Get bulk sms report details
+GET {{host}}/v1/bulk-sms/reports/1
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3Njk0NDIxOTUsImlhdCI6MTc2OTQzODU5NSwiZW1haWwiOiJhZG1pbkBzeXN0ZW0uY29tIiwic3ViIjoxLCJwZXJtcyI6W119.EF4QVIhGwttY36zuHN_znAXS7f4-_tCXMulFhRGSBD0
+
+
+### Get bulk sms report details
+POST {{host}}/v1/bulk-sms/send
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3Njk0NDIxOTUsImlhdCI6MTc2OTQzODU5NSwiZW1haWwiOiJhZG1pbkBzeXN0ZW0uY29tIiwic3ViIjoxLCJwZXJtcyI6W119.EF4QVIhGwttY36zuHN_znAXS7f4-_tCXMulFhRGSBD0
+
+{
+  "message": "test",
+  "numbers": "5554443322,5554443344",
+  "phonebook_ids": [1,2,3,4,5],
+  "preview": true
+}
+
+
+### Get reseller sub users
+GET {{host}}/v1/reseller/users
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhcHAiLCJleHAiOjE3NzI2ODM5MTIsImlhdCI6MTc3MjYyOTkxMiwic3ViIjozLCJyb2xlcyI6WyJyb290Il0sInBlcm1zIjpbXX0.h6ZfDLjbScJoS1Xhus7NIv1qbiks9a2aPt2owCRSeu8
+
+
+### Get reseller sub users
+GET {{host}}/v1/admin/system-settings
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhcHAiLCJleHAiOjE3NzI2ODM5MTIsImlhdCI6MTc3MjYyOTkxMiwic3ViIjozLCJyb2xlcyI6WyJyb290Il0sInBlcm1zIjpbXX0.h6ZfDLjbScJoS1Xhus7NIv1qbiks9a2aPt2owCRSeu8
+
+
+### Get User with id
+GET {{host}}/v1/api/users/1
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhcHAiLCJleHAiOjE3NzI2ODM5MTIsImlhdCI6MTc3MjYyOTkxMiwic3ViIjozLCJyb2xlcyI6WyJyb290Il0sInBlcm1zIjpbXX0.h6ZfDLjbScJoS1Xhus7NIv1qbiks9a2aPt2owCRSeu8
+
+
+### Delete User with id
+DELETE {{host}}/v1/api/users/2
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhcHAiLCJleHAiOjE3NzI2ODM5MTIsImlhdCI6MTc3MjYyOTkxMiwic3ViIjozLCJyb2xlcyI6WyJyb290Il0sInBlcm1zIjpbXX0.h6ZfDLjbScJoS1Xhus7NIv1qbiks9a2aPt2owCRSeu8
