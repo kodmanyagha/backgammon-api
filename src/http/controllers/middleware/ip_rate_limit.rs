@@ -22,7 +22,6 @@ const REQUEST_WINDOW: Duration = Duration::from_secs(60);
 
 static UNRESOLVED_CLIENT_IP_WARNED: AtomicBool = AtomicBool::new(false);
 
-/// Limits how often one network may call the unauthenticated `/v1/auth` endpoints.
 pub async fn limit_auth_requests(
     State(state): State<AppState>,
     client_ip: Result<ClientIp, Rejection>,
@@ -40,7 +39,6 @@ pub async fn limit_auth_requests(
     .await
 }
 
-/// Limits how often one network may call the unauthenticated public game endpoints.
 pub async fn limit_public_requests(
     State(state): State<AppState>,
     client_ip: Result<ClientIp, Rejection>,
@@ -51,6 +49,40 @@ pub async fn limit_public_requests(
         &state,
         RateLimitScope::PublicRequests,
         CONFIG.get_public_requests_per_minute_per_ip(),
+        client_ip,
+        req,
+        next,
+    )
+    .await
+}
+
+pub async fn limit_captcha_start_requests(
+    State(state): State<AppState>,
+    client_ip: Result<ClientIp, Rejection>,
+    req: Request,
+    next: Next,
+) -> Response {
+    enforce(
+        &state,
+        RateLimitScope::CaptchaStart,
+        CONFIG.get_captcha_starts_per_minute_per_ip(),
+        client_ip,
+        req,
+        next,
+    )
+    .await
+}
+
+pub async fn limit_captcha_verify_requests(
+    State(state): State<AppState>,
+    client_ip: Result<ClientIp, Rejection>,
+    req: Request,
+    next: Next,
+) -> Response {
+    enforce(
+        &state,
+        RateLimitScope::CaptchaVerify,
+        CONFIG.get_captcha_verifications_per_minute_per_ip(),
         client_ip,
         req,
         next,
@@ -86,14 +118,15 @@ fn warn_once_about_unresolved_client_ip() {
     }
 }
 
-/// Builds the `429` response asking the client to retry once `retry_after` has passed.
 pub fn too_many_requests_response(retry_after: Duration) -> Response {
+    rate_limited_response(retry_after, errors::RATE_LIMIT_EXCEEDED)
+}
+
+pub fn rate_limited_response(retry_after: Duration, error_key: &str) -> Response {
     let retry_after_seconds = retry_after.as_secs().max(1);
     let mut response = (
         StatusCode::TOO_MANY_REQUESTS,
-        Json(json!(
-            ApiResponse::new().with_global_error(errors::RATE_LIMIT_EXCEEDED)
-        )),
+        Json(json!(ApiResponse::new().with_global_error(error_key))),
     )
         .into_response();
     response

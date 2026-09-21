@@ -18,7 +18,7 @@ use crate::{
     tag = "Games",
     operation_id = "games_quick_match_post",
     responses(
-        (status = 200, description = "Waiting for an opponent, or matched into a game", body = ApiResponse),
+        (status = 200, description = "Waiting for an opponent, matched into a game, or `no_opponent` after the 60 second wait", body = ApiResponse),
     ),
     security(("bearer_auth" = [])),
 )]
@@ -50,6 +50,12 @@ pub async fn delete_leave(
     State(state): State<AppState>,
     Extension(user): Extension<entity::users::Model>,
 ) -> Response {
-    cancel(&state, user.id).await;
-    Json(json!(ApiResponse::new().with_data(json!({ "left": true })))).into_response()
+    match cancel(&state, user.id).await {
+        Ok(()) => Json(json!(ApiResponse::new().with_data(json!({ "left": true })))).into_response(),
+        Err(err) => (
+            StatusCode::BAD_REQUEST,
+            Json(json!(ApiResponse::new().with_global_error(&err.to_string()))),
+        )
+            .into_response(),
+    }
 }

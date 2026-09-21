@@ -22,7 +22,6 @@ pub fn init_tracing_subscriber() {
     });
 }
 
-/// Call this function before each tests.
 pub fn init_test_env() {
     INIT_TEST_ENV.call_once(|| {
         dotenvy::from_filename(".env.test").ok();

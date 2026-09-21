@@ -10,6 +10,10 @@ pub const REGISTER: &str = "/register";
 pub const LOGIN: &str = "/login";
 pub const GUEST: &str = "/guest";
 
+pub const CAPTCHA: &str = "/captcha";
+pub const START: &str = "/start";
+pub const VERIFY: &str = "/verify";
+
 pub const SETTINGS: &str = "/settings";
 pub const PERMISSIONS: &str = "/permissions";
 pub const ROLES: &str = "/roles";

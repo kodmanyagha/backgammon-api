@@ -39,8 +39,8 @@ pub async fn get_history(
 ) -> Result<Response, Response> {
     let filter = entity::games::Entity::find().filter(
         Condition::any()
-            .add(entity::games::Column::GoldUserId.eq(user.id))
-            .add(entity::games::Column::PurpleUserId.eq(user.id)),
+            .add(entity::games::Column::WhiteUserId.eq(user.id))
+            .add(entity::games::Column::BlackUserId.eq(user.id)),
     );
 
     let mut order_columns = HashMap::new();

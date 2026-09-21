@@ -52,5 +52,10 @@ pub fn routes(app_state: &AppState) -> axum::Router<AppState> {
                 ))
                 .with_state(app_state.clone()),
         )
+        .layer(axum::middleware::from_fn_with_state(
+            app_state.clone(),
+            controllers::middleware::captcha_verification::require_verification,
+        ))
+        .nest(route::CAPTCHA, controllers::v1::captcha::routes(app_state))
         .with_state(app_state.clone())
 }

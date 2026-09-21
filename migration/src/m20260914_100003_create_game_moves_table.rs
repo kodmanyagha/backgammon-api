@@ -19,6 +19,7 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(GameMoves::GameId).big_unsigned().not_null())
+                    .col(ColumnDef::new(GameMoves::RoundNo).small_unsigned().not_null().default(1))
                     .col(
                         ColumnDef::new(GameMoves::SequenceNo)
                             .unsigned()
@@ -28,12 +29,13 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(GameMoves::Player)
                             .enumeration(
                                 Alias::new("game_moves_player"),
-                                [Alias::new("gold"), Alias::new("purple")],
+                                [Alias::new("white"), Alias::new("black")],
                             )
                             .not_null(),
                     )
                     .col(ColumnDef::new(GameMoves::OriginPoint).tiny_unsigned().null())
                     .col(ColumnDef::new(GameMoves::Die).tiny_unsigned().not_null())
+                    .col(ColumnDef::new(GameMoves::IsAi).boolean().not_null().default(false))
                     .col(
                         date_time(GameMoves::CreatedAt)
                             .default(SimpleExpr::Keyword(Keyword::CurrentTimestamp)),
@@ -68,9 +70,11 @@ enum GameMoves {
     Table,
     Id,
     GameId,
+    RoundNo,
     SequenceNo,
     Player,
     OriginPoint,
     Die,
+    IsAi,
     CreatedAt,
 }

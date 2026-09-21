@@ -8,6 +8,8 @@ pub const MISSING_TOKENS: &str = "error.missing_tokens";
 pub const INVALID_TOKEN: &str = "error.invalid_token";
 pub const RATE_LIMIT_EXCEEDED: &str = "error.rate_limit_exceeded";
 pub const PAYLOAD_TOO_LARGE: &str = "error.payload_too_large";
+pub const GUEST_CREATION_PAUSED: &str = "error.guest_creation_paused";
+pub const CAPTCHA_UNAVAILABLE: &str = "error.captcha_unavailable";
 
 pub const EMAIL_ALREADY_TAKEN: &str = "error.email_already_taken";
 pub const USERNAME_ALREADY_TAKEN: &str = "error.username_already_taken";

@@ -8,6 +8,7 @@ use tokio::net::{TcpListener, UnixListener};
 use tower_http::cors::{Any, CorsLayer};
 
 use crate::http::controllers::middleware::http_log;
+use crate::service::game::db_writer;
 use crate::http::routes;
 use crate::{state::app_state::AppState, CONFIG};
 
@@ -41,6 +42,8 @@ pub async fn handle() -> anyhow::Result<()> {
         .map_err(|_| anyhow::anyhow!("Rustls default provider error"))?;
 
     let app_state = AppState::try_new(None).await?;
+
+    tokio::spawn(db_writer::run(app_state.clone()));
 
     let app = init_routes(&app_state).await;
 

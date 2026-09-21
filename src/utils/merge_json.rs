@@ -40,20 +40,13 @@ fn merge_value(a: &mut Value, b: &Value) {
         (Value::Array(ref mut a), &Value::Object(ref b)) => {
             a.extend([Value::Object(b.clone())]);
         }
-        (_, Value::Null) => {} // do nothing
+        (_, Value::Null) => {}
         (a, b) => {
             *a = b.clone();
         }
     }
 }
 
-///
-/// deep merge two structs that are serializable.
-/// based on turning them into json::Value and merging that.
-///
-/// # Errors
-/// Will return an error if serialization fails
-///
 pub fn merge_struct<T: serde::ser::Serialize + serde::de::DeserializeOwned>(
     base: &T,
     overrides: &T,

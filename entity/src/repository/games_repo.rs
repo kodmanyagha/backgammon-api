@@ -20,13 +20,13 @@ impl GamesRepository {
 
     pub async fn create(
         &self,
-        gold_user_id: u64,
-        purple_user_id: u64,
+        white_user_id: u64,
+        black_user_id: u64,
     ) -> anyhow::Result<crate::games::Model> {
         let created_at = now();
         let row = crate::games::ActiveModel {
-            gold_user_id: Set(gold_user_id),
-            purple_user_id: Set(purple_user_id),
+            white_user_id: Set(white_user_id),
+            black_user_id: Set(black_user_id),
             status: Set(GameStatus::Active),
             created_at: Set(created_at),
             started_at: Set(Some(created_at)),
@@ -47,10 +47,24 @@ impl GamesRepository {
         Ok(crate::games::Entity::find()
             .filter(
                 Condition::any()
-                    .add(crate::games::Column::GoldUserId.eq(user_id))
-                    .add(crate::games::Column::PurpleUserId.eq(user_id)),
+                    .add(crate::games::Column::WhiteUserId.eq(user_id))
+                    .add(crate::games::Column::BlackUserId.eq(user_id)),
             )
             .order_by_desc(crate::games::Column::CreatedAt)
+            .limit(limit)
+            .all(&*self.db_conn)
+            .await?)
+    }
+
+    pub async fn active_started_before(
+        &self,
+        cutoff: NaiveDateTime,
+        limit: u64,
+    ) -> anyhow::Result<Vec<crate::games::Model>> {
+        Ok(crate::games::Entity::find()
+            .filter(crate::games::Column::Status.eq(GameStatus::Active))
+            .filter(crate::games::Column::CreatedAt.lt(cutoff))
+            .order_by_asc(crate::games::Column::CreatedAt)
             .limit(limit)
             .all(&*self.db_conn)
             .await?)

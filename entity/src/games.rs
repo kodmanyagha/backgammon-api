@@ -9,11 +9,14 @@ use utoipa::ToSchema;
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: u64,
-    pub gold_user_id: u64,
-    pub purple_user_id: u64,
+    pub white_user_id: u64,
+    pub black_user_id: u64,
     pub winner_user_id: Option<u64>,
 
     pub status: GameStatus,
+
+    pub white_score: u16,
+    pub black_score: u16,
 
     pub created_at: chrono::NaiveDateTime,
     pub started_at: Option<chrono::NaiveDateTime>,

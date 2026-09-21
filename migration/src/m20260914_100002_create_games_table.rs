@@ -18,9 +18,9 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Games::GoldUserId).big_unsigned().not_null())
+                    .col(ColumnDef::new(Games::WhiteUserId).big_unsigned().not_null())
                     .col(
-                        ColumnDef::new(Games::PurpleUserId)
+                        ColumnDef::new(Games::BlackUserId)
                             .big_unsigned()
                             .not_null(),
                     )
@@ -39,6 +39,8 @@ impl MigrationTrait for Migration {
                             .default("waiting")
                             .not_null(),
                     )
+                    .col(ColumnDef::new(Games::WhiteScore).small_unsigned().not_null().default(0))
+                    .col(ColumnDef::new(Games::BlackScore).small_unsigned().not_null().default(0))
                     .col(
                         date_time(Games::CreatedAt)
                             .default(SimpleExpr::Keyword(Keyword::CurrentTimestamp)),
@@ -50,8 +52,8 @@ impl MigrationTrait for Migration {
             .await?;
 
         for (name, col) in [
-            ("games_gold_user_id_idx", Games::GoldUserId),
-            ("games_purple_user_id_idx", Games::PurpleUserId),
+            ("games_white_user_id_idx", Games::WhiteUserId),
+            ("games_black_user_id_idx", Games::BlackUserId),
             ("games_winner_user_id_idx", Games::WinnerUserId),
             ("games_status_idx", Games::Status),
         ] {
@@ -81,10 +83,12 @@ impl MigrationTrait for Migration {
 enum Games {
     Table,
     Id,
-    GoldUserId,
-    PurpleUserId,
+    WhiteUserId,
+    BlackUserId,
     WinnerUserId,
     Status,
+    WhiteScore,
+    BlackScore,
     CreatedAt,
     StartedAt,
     FinishedAt,

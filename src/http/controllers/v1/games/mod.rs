@@ -15,9 +15,6 @@ pub mod quick_match;
 pub mod show;
 pub mod ws;
 
-/// Kimlik doğrulaması GEREKTİRMEYEN uçlar — bir davet linkine tıklayan kişi
-/// henüz giriş yapmamış/hesabı olmayabilir, davetin kimden geldiğini
-/// (`preview`) görebilmesi login/misafir-girişinden ÖNCE gerekiyor.
 pub fn public_routes(app_state: &AppState) -> Router<AppState> {
     Router::new()
         .nest(
@@ -36,8 +33,6 @@ pub fn public_routes(app_state: &AppState) -> Router<AppState> {
         .with_state(app_state.clone())
 }
 
-/// Kimlik doğrulaması GEREKTİREN uçlar — `v1/routes.rs`'te `auth_check`
-/// middleware'inin ARKASINA eklenir.
 pub fn protected_routes(app_state: &AppState) -> Router<AppState> {
     Router::new()
         .route(

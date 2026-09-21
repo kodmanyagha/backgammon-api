@@ -15,6 +15,11 @@ const DEFAULT_MAX_REQUEST_BODY_BYTES: usize = 64 * 1024;
 const DEFAULT_AUTH_REQUESTS_PER_MINUTE_PER_IP: u32 = 30;
 const DEFAULT_PUBLIC_REQUESTS_PER_MINUTE_PER_IP: u32 = 60;
 const DEFAULT_GUEST_CREATIONS_PER_HOUR_PER_IP: u32 = 20;
+const DEFAULT_GUEST_CREATIONS_PER_HOUR_GLOBAL: u32 = 200;
+const DEFAULT_CAPTCHA_CHALLENGE_TTL_SECONDS: u64 = 60;
+const DEFAULT_CAPTCHA_VERIFICATION_TTL_SECONDS: u64 = 7 * 24 * 60 * 60;
+const DEFAULT_CAPTCHA_STARTS_PER_MINUTE_PER_IP: u32 = 10;
+const DEFAULT_CAPTCHA_VERIFICATIONS_PER_MINUTE_PER_IP: u32 = 30;
 
 fn env_parsed_or<T: std::str::FromStr>(name: &str, default: T) -> T {
     env::var(name)
@@ -66,6 +71,26 @@ pub static CONFIG: Lazy<AppConfig> = Lazy::new(|| {
         .guest_creations_per_hour_per_ip(env_parsed_or(
             "GUEST_CREATIONS_PER_HOUR_PER_IP",
             DEFAULT_GUEST_CREATIONS_PER_HOUR_PER_IP,
+        ))
+        .guest_creations_per_hour_global(env_parsed_or(
+            "GUEST_CREATIONS_PER_HOUR_GLOBAL",
+            DEFAULT_GUEST_CREATIONS_PER_HOUR_GLOBAL,
+        ))
+        .captcha_challenge_ttl_seconds(env_parsed_or(
+            "CAPTCHA_CHALLENGE_TTL_SECONDS",
+            DEFAULT_CAPTCHA_CHALLENGE_TTL_SECONDS,
+        ))
+        .captcha_verification_ttl_seconds(env_parsed_or(
+            "CAPTCHA_VERIFICATION_TTL_SECONDS",
+            DEFAULT_CAPTCHA_VERIFICATION_TTL_SECONDS,
+        ))
+        .captcha_starts_per_minute_per_ip(env_parsed_or(
+            "CAPTCHA_STARTS_PER_MINUTE_PER_IP",
+            DEFAULT_CAPTCHA_STARTS_PER_MINUTE_PER_IP,
+        ))
+        .captcha_verifications_per_minute_per_ip(env_parsed_or(
+            "CAPTCHA_VERIFICATIONS_PER_MINUTE_PER_IP",
+            DEFAULT_CAPTCHA_VERIFICATIONS_PER_MINUTE_PER_IP,
         ))
         .database_url(env::var("DATABASE_URL").expect("DATABASE_URL env variable required"))
         .redis_url(env::var("REDIS_URL").expect("REDIS_URL env variable required"))

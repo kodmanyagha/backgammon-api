@@ -11,7 +11,7 @@ pub async fn handle(
         .await
         .ok_or_else(|| anyhow::anyhow!(errors::GAME_NOT_FOUND))?;
 
-    if game.gold_user_id != requester_id && game.purple_user_id != requester_id {
+    if game.white_user_id != requester_id && game.black_user_id != requester_id {
         return Err(anyhow::anyhow!(errors::UNAUTHORIZED));
     }
 

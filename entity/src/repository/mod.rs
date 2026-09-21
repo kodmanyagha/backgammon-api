@@ -1,3 +1,4 @@
+pub mod game_batch_repo;
 pub mod game_invites_repo;
 pub mod game_moves_repo;
 pub mod games_repo;

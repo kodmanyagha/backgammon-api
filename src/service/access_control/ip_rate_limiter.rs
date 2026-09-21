@@ -15,6 +15,8 @@ pub enum RateLimitScope {
     AuthRequests,
     PublicRequests,
     GuestCreation,
+    CaptchaStart,
+    CaptchaVerify,
 }
 
 struct WindowCounter {
@@ -48,12 +50,6 @@ impl IpRateLimiter {
         }
     }
 
-    /// Counts one request from `ip` in `scope` within a fixed `window`; returns the time
-    /// left until the window ends when the client already spent its `limit`.
-    ///
-    /// IPv6 clients share one budget per /64 prefix and IPv4-mapped IPv6 addresses count
-    /// as plain IPv4, so rotating addresses inside one network does not reset the budget.
-    /// Expired windows are purged lazily.
     pub fn check(
         &self,
         scope: RateLimitScope,
@@ -106,7 +102,6 @@ impl IpRateLimiter {
     }
 }
 
-/// Collapses `ip` to the network that shares one rate limit budget.
 fn network_key(ip: IpAddr) -> IpAddr {
     match ip {
         IpAddr::V4(_) => ip,

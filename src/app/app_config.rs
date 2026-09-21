@@ -24,6 +24,11 @@ pub struct AppConfig {
     auth_requests_per_minute_per_ip: u32,
     public_requests_per_minute_per_ip: u32,
     guest_creations_per_hour_per_ip: u32,
+    guest_creations_per_hour_global: u32,
+    captcha_challenge_ttl_seconds: u64,
+    captcha_verification_ttl_seconds: u64,
+    captcha_starts_per_minute_per_ip: u32,
+    captcha_verifications_per_minute_per_ip: u32,
 }
 
 impl AppConfig {
@@ -61,6 +66,26 @@ impl AppConfig {
 
     pub fn get_guest_creations_per_hour_per_ip(&self) -> u32 {
         self.guest_creations_per_hour_per_ip
+    }
+
+    pub fn get_guest_creations_per_hour_global(&self) -> u32 {
+        self.guest_creations_per_hour_global
+    }
+
+    pub fn get_captcha_challenge_ttl_seconds(&self) -> u64 {
+        self.captcha_challenge_ttl_seconds
+    }
+
+    pub fn get_captcha_verification_ttl_seconds(&self) -> u64 {
+        self.captcha_verification_ttl_seconds
+    }
+
+    pub fn get_captcha_starts_per_minute_per_ip(&self) -> u32 {
+        self.captcha_starts_per_minute_per_ip
+    }
+
+    pub fn get_captcha_verifications_per_minute_per_ip(&self) -> u32 {
+        self.captcha_verifications_per_minute_per_ip
     }
 
     pub fn get_http_allow_origin(&self) -> &str {

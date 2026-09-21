@@ -12,7 +12,6 @@ pub async fn handle(
         .get_user_roles_str(user.id)
         .await;
 
-    // TODO Move this control logic to route layer
     if !current_user_role.contains(&role_keys::ADMIN.to_string()) {
         return Err(anyhow::anyhow!("Unauthorized"));
     }

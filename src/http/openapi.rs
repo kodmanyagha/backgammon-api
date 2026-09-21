@@ -10,6 +10,9 @@ use crate::{
             guest::GuestInputDto, login::LoginInputDto, register::RegisterInputDto,
             update_profile::UpdateProfileInputDto, AuthResultDto,
         },
+        captcha::{
+            CaptchaAnswerInputDto, CaptchaChallengeDto, CaptchaInvalidDto, CaptchaVerifiedDto,
+        },
         entity_service::users_entity_service::{CreateUserInputDto, UpdateUserInputDto},
         game::{
             create_invite::InviteResultDto, get_history::GameHistoryItemDto,
@@ -42,12 +45,13 @@ impl Modify for SecurityAddon {
 #[openapi(
     info(
         title = "Tavla API",
-        description = "Backend for the Tavla (backgammon) game.",
+        description = "Backend for the Tavla (backgammon) game. Every /v1 call except /v1/captcha/* must carry the `x-captcha-verification` header returned by /v1/captcha/verify.",
         version = "0.1.0",
     ),
     modifiers(&SecurityAddon),
     tags(
         (name = "Home", description = "Service info"),
+        (name = "Captcha", description = "Human verification required before every other /v1 call"),
         (name = "Auth", description = "Register, login and guest sessions"),
         (name = "Profile", description = "Current user's profile"),
         (name = "Games", description = "Matchmaking, invites and match lookup"),
@@ -55,6 +59,8 @@ impl Modify for SecurityAddon {
     ),
     paths(
         controllers::home::index::get_index,
+        controllers::v1::captcha::start::post_start,
+        controllers::v1::captcha::verify::post_verify,
         controllers::v1::auth::register::post_register,
         controllers::v1::auth::login::post_login,
         controllers::v1::auth::guest::post_guest,
@@ -74,6 +80,10 @@ impl Modify for SecurityAddon {
     ),
     components(schemas(
         ApiResponse,
+        CaptchaChallengeDto,
+        CaptchaAnswerInputDto,
+        CaptchaVerifiedDto,
+        CaptchaInvalidDto,
         Datatable<entity::permissions::Model>,
         CreateUserInputDto,
         UpdateUserInputDto,

@@ -1,14 +1,3 @@
-/// Generates an error JSON response body.
-///
-/// # Arguments
-/// - `$global`: expression coercible to `String` — the top-level `error._global` message.
-/// - (optional) `$key => $value` pairs: additional fields nested inside `error`.
-///
-/// # Example
-/// ```
-/// let body = error_response!("Something went wrong");
-/// let body = error_response!("Validation failed", "email" => "already taken", "name" => "too short");
-/// ```
 macro_rules! error_response {
     ($global:expr) => {
         serde_json::json!({
@@ -32,15 +21,6 @@ macro_rules! error_response {
     };
 }
 
-/// Generates a success JSON response body where each variable name becomes a JSON key.
-///
-/// # Example
-/// ```
-/// let user = ...;
-/// let jwt = "token";
-/// let body = success_response!(user, jwt);
-/// // => { "status": "success", "data": { "user": <user>, "jwt": "token" } }
-/// ```
 macro_rules! success_response {
     ($($var:ident),* $(,)?) => {
         serde_json::json!({

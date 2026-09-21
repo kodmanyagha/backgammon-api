@@ -37,8 +37,6 @@ pub async fn create_db_conn_pool() -> anyhow::Result<DatabaseConnection> {
         .max_lifetime(Duration::from_secs(60))
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                //tracing::info!("Setting timezone for current mysql connection");
-
                 sqlx::query("SET time_zone = '+03:00'")
                     .execute(conn)
                     .await?;

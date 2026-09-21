@@ -49,11 +49,9 @@ impl IntoResponse for ValidatedJsonError {
                     err.0
                         .into_iter()
                         .map(|(key, val)| (key.to_string(), format!("{:?}", val)))
-                        // .map(|(key, _val)| (key.to_string(), format!("{}", _val)))
                         .collect(),
                 );
 
-                // let message = format!("JSON validation error: [{self}]").replace('\n', ", ");
                 (StatusCode::BAD_REQUEST, Json(json!(response)))
             }
             ValidatedJsonError::AxumJsonRejection(err) => (

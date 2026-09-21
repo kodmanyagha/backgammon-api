@@ -1,3 +1,2 @@
 - if you want to transform Option<T> to Result<T> statically, use `ok_or`, for dynamic error use `ok_or_else`.
-- Write function documentations only, otherwise never add comment. Use well naming for functions, structs, enums, enum fields and variables.
-- Never write comment anywhere. Instead use better names for functions, variables, structs, enums etc.
+- Never write comments anywhere, doc comments (`///`, `//!`) included; delete any comment you see. Only comments whose first word is IMPORTANT may stay. Use well naming for functions, structs, enums, enum fields and variables.

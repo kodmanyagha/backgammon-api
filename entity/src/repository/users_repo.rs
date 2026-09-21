@@ -52,7 +52,6 @@ impl UsersRepository {
             .ok()?
     }
 
-    /// Finds the guest whose stored `guest_unique_id` column equals `guest_unique_id_hash`.
     pub async fn get_by_guest_unique_id_hash(
         &self,
         guest_unique_id_hash: &str,
@@ -185,7 +184,6 @@ impl UsersRepository {
         Ok(row.insert(&*self.db_conn).await?)
     }
 
-    /// Creates a guest identified by the SHA-256 hex digest of the device secret.
     pub async fn create_guest_user(
         &self,
         username: &str,

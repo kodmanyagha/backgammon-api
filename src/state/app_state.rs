@@ -10,7 +10,8 @@ use sea_orm::DatabaseConnection;
 use crate::{
     service::{
         access_control::{
-            ip_rate_limiter::IpRateLimiter, rate_limiter::RateLimiter, throttle_cache::ThrottleCache,
+            ip_rate_limiter::IpRateLimiter, rate_limiter::RateLimiter,
+            sliding_window_limiter::SlidingWindowLimiter, throttle_cache::ThrottleCache,
         },
         entity_service::users_entity_service::UsersEntityService,
         game::{matchmaking_queue::MatchmakingQueue, sessions::GameSessions},
@@ -36,6 +37,7 @@ pub struct AppState {
     pub throttle_cache: ThrottleCache,
     pub rate_limiter: RateLimiter,
     pub ip_rate_limiter: IpRateLimiter,
+    pub guest_creation_limiter: SlidingWindowLimiter,
     pub matchmaking: MatchmakingQueue,
     pub game_sessions: GameSessions,
 }
@@ -64,8 +66,10 @@ impl AppState {
         let throttle_cache = ThrottleCache::load(&user_throttles_repo).await?;
         let rate_limiter = RateLimiter::new();
         let ip_rate_limiter = IpRateLimiter::new();
+        let guest_creation_limiter = SlidingWindowLimiter::new();
 
         let redis_service = RedisService::new().await?;
+        let matchmaking = MatchmakingQueue::new(redis_service.clone());
 
         Ok(Self {
             db_conn: db_conn.clone(),
@@ -83,7 +87,8 @@ impl AppState {
             throttle_cache,
             rate_limiter,
             ip_rate_limiter,
-            matchmaking: MatchmakingQueue::new(),
+            guest_creation_limiter,
+            matchmaking,
             game_sessions: GameSessions::new(),
         })
     }

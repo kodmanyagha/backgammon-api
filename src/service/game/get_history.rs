@@ -18,10 +18,10 @@ pub struct GameHistoryItemDto {
 }
 
 pub async fn to_dto(state: &AppState, user_id: u64, game: &entity::games::Model) -> Value {
-    let (your_color, opponent_id) = if game.gold_user_id == user_id {
-        ("gold", game.purple_user_id)
+    let (your_color, opponent_id) = if game.white_user_id == user_id {
+        ("white", game.black_user_id)
     } else {
-        ("purple", game.gold_user_id)
+        ("black", game.white_user_id)
     };
 
     let opponent_username = state

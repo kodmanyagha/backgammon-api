@@ -1,7 +1,7 @@
 use chrono::Utc;
 use entity::game_invites::GameInviteStatus;
 
-use crate::{state::app_state::AppState, utils::consts::errors};
+use crate::{service::game::create_match, state::app_state::AppState, utils::consts::errors};
 
 pub async fn handle(
     state: &AppState,
@@ -28,10 +28,7 @@ pub async fn handle(
         return Err(anyhow::anyhow!(errors::CANNOT_ACCEPT_OWN_INVITE));
     }
 
-    let game = state
-        .games_repo
-        .create(invite.created_by_user_id, accepting_user_id)
-        .await?;
+    let game = create_match::create(state, invite.created_by_user_id, accepting_user_id).await?;
 
     state
         .game_invites_repo

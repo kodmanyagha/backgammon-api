@@ -6,10 +6,8 @@ use base64::{engine::general_purpose::STANDARD, Engine};
 use rand::{distr::Alphanumeric, seq::SliceRandom, RngExt};
 use sha2::{Digest, Sha256};
 
-// Best value for encryption and unique file names.
 pub const UNIQUE_KEY_LEN: usize = 32;
 
-// Best value for redis and mysql operations.
 pub const OPTIMAL_RPP: u64 = 1_000;
 
 pub fn crypto_random_str(len: usize) -> String {
@@ -21,7 +19,6 @@ pub fn crypto_random_str(len: usize) -> String {
         .collect()
 }
 
-/// Returns the lowercase hex encoded SHA-256 digest of `input`.
 pub fn sha256_hex(input: &str) -> String {
     Sha256::digest(input.as_bytes())
         .iter()
@@ -50,8 +47,6 @@ fn derive_encryption_key(secret: &str) -> Key<Aes256Gcm> {
     Key::<Aes256Gcm>::clone_from_slice(&digest)
 }
 
-/// Encrypts `plain_text` with AES-256-GCM using `secret` as the key material and returns
-/// the base64-encoded `nonce || ciphertext`.
 pub fn encrypt_base64(plain_text: &str, secret: &str) -> anyhow::Result<String> {
     let cipher = Aes256Gcm::new(&derive_encryption_key(secret));
     let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
@@ -66,8 +61,6 @@ pub fn encrypt_base64(plain_text: &str, secret: &str) -> anyhow::Result<String> 
     Ok(STANDARD.encode(payload))
 }
 
-/// Decrypts a base64 `nonce || ciphertext` payload produced by [`encrypt_base64`] using
-/// `secret` as the key material.
 pub fn decrypt_base64(cipher_text_b64: &str, secret: &str) -> anyhow::Result<String> {
     let payload = STANDARD.decode(cipher_text_b64)?;
 

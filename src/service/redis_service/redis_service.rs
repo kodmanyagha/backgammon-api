@@ -19,7 +19,6 @@ pub struct RedisService {
 }
 
 impl RedisService {
-    /// We don't need to create pool with r2d2, because it is async and redis conn is cheap.
     pub async fn new() -> anyhow::Result<Self> {
         let manager = RedisConnectionManager::new(CONFIG.get_redis_url())?;
         let bb8_pool = bb8::Pool::builder()
@@ -52,7 +51,7 @@ impl RedisService {
     }
 
     pub async fn get(&self, key: &str) -> anyhow::Result<Option<String>> {
-        let mut conn = self.client.get_multiplexed_async_connection().await?;
+        let mut conn = self.conn().await?;
 
         conn.get(key)
             .await
@@ -90,30 +89,13 @@ impl RedisService {
     }
 
     pub async fn conn(&self) -> anyhow::Result<bb8::PooledConnection<'_, RedisConnectionManager>> {
-        // self.client
-        // .get_connection()
-        // .map_err(|err| anyhow::anyhow!("Err: {err}"))
-
-        // self.r2d2_pool
-        // .get()
-        // .map_err(|err| anyhow::anyhow!("Err: {err}"))
-
         self.bb8_pool
             .get()
-            // .get_owned()
             .await
             .map_err(|err| anyhow::anyhow!("Err: {err}"))
     }
 
     pub async fn conn_dedicated(&self) -> anyhow::Result<redis::aio::MultiplexedConnection> {
-        // self.client
-        // .get_connection()
-        // .map_err(|err| anyhow::anyhow!("Err: {err}"))
-
-        // self.r2d2_pool
-        // .get()
-        // .map_err(|err| anyhow::anyhow!("Err: {err}"))
-
         let mut conn = self
             .bb8_pool
             .dedicated_connection()
@@ -125,25 +107,12 @@ impl RedisService {
         Ok(conn)
     }
 
-    /// Example usage:
-    ///
-    /// ```
-    /// let mut sscan_stream = SScanStream::new(conn, key, 100, None);
-    /// while let Some(page_res) = sscan_stream.next().await {
-    ///     let page = page_res?;
-    ///     println!("got page with {} members", page.len());
-    ///     for m in page {
-    ///         tracing::info!("{}", m);
-    ///     }
-    /// }
-    /// ```
     pub async fn sscan(&self, key: &str) -> anyhow::Result<SScanStream> {
         let conn = self.client.get_multiplexed_async_connection().await?;
 
         Ok(SScanStream::new(conn, key, 100, None))
     }
 
-    /// Return number of element a set
     pub async fn scard(&self, key: &str) -> anyhow::Result<usize> {
         let mut conn = self.client.get_multiplexed_async_connection().await?;
 
@@ -327,7 +296,6 @@ impl RedisService {
             .map_err(|err| anyhow::anyhow!("Err: {err}"))
     }
 
-    /// Return size of a list.
     pub async fn llen(&self, key: &str) -> anyhow::Result<usize> {
         let mut conn = self.client.get_multiplexed_async_connection().await?;
 
@@ -336,7 +304,6 @@ impl RedisService {
             .map_err(|err| anyhow::anyhow!("Err: {err}"))
     }
 
-    /// Get index of a value inside of a list.
     pub async fn lpos_first(&self, key: &str, value: &str) -> anyhow::Result<Option<usize>> {
         let mut conn = self.client.get_multiplexed_async_connection().await?;
 
@@ -349,7 +316,6 @@ impl RedisService {
         Ok(result.first().cloned())
     }
 
-    /// Remove first found value from list
     pub async fn lrem_first(&self, key: &str, value: &str) -> anyhow::Result<usize> {
         let mut conn = self.client.get_multiplexed_async_connection().await?;
 
@@ -358,7 +324,6 @@ impl RedisService {
             .map_err(|err| anyhow::anyhow!("Err: {err}"))
     }
 
-    /// Returns all the members of the set value stored at key.
     pub async fn smembers(&self, key: &str) -> anyhow::Result<HashSet<String>> {
         let mut conn = self.client.get_multiplexed_async_connection().await?;
 
@@ -367,9 +332,32 @@ impl RedisService {
             .map_err(|err| anyhow::anyhow!("Err: {err}"))
     }
 
-    /// Remove key from redis.
+    pub async fn set_with_ttl(&self, key: &str, value: &str, ttl_seconds: u64) -> anyhow::Result<()> {
+        let mut conn = self.conn().await?;
+
+        conn.set_ex(key, value, ttl_seconds)
+            .await
+            .map_err(|err| anyhow::anyhow!("Err: {err}"))
+    }
+
+    pub async fn get_del(&self, key: &str) -> anyhow::Result<Option<String>> {
+        let mut conn = self.conn().await?;
+
+        conn.get_del(key)
+            .await
+            .map_err(|err| anyhow::anyhow!("Err: {err}"))
+    }
+
+    pub async fn exists(&self, key: &str) -> anyhow::Result<bool> {
+        let mut conn = self.conn().await?;
+
+        conn.exists(key)
+            .await
+            .map_err(|err| anyhow::anyhow!("Err: {err}"))
+    }
+
     pub async fn del(&self, key: &str) -> anyhow::Result<usize> {
-        let mut conn = self.client.get_multiplexed_async_connection().await?;
+        let mut conn = self.conn().await?;
 
         conn.del(key)
             .await

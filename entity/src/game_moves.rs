@@ -9,12 +9,14 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub id: u64,
     pub game_id: u64,
+    pub round_no: u16,
     pub sequence_no: u32,
 
     pub player: GameMovePlayer,
 
     pub origin_point: Option<u8>,
     pub die: u8,
+    pub is_ai: bool,
 
     pub created_at: chrono::NaiveDateTime,
 }
@@ -29,8 +31,8 @@ impl ActiveModelBehavior for ActiveModel {}
 #[serde(rename_all = "snake_case")]
 pub enum GameMovePlayer {
     #[default]
-    #[sea_orm(string_value = "gold")]
-    Gold,
-    #[sea_orm(string_value = "purple")]
-    Purple,
+    #[sea_orm(string_value = "white")]
+    White,
+    #[sea_orm(string_value = "black")]
+    Black,
 }

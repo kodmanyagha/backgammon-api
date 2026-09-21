@@ -17,6 +17,7 @@ mod m20260914_100002_create_games_table;
 mod m20260914_100003_create_game_moves_table;
 mod m20260914_100004_create_game_invites_table;
 mod m20260914_100005_create_scores_table;
+mod m20260914_100006_create_game_rounds_table;
 mod m20260919_100001_add_guest_unique_id_to_users;
 
 pub struct Migrator;
@@ -39,6 +40,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260914_100003_create_game_moves_table::Migration),
             Box::new(m20260914_100004_create_game_invites_table::Migration),
             Box::new(m20260914_100005_create_scores_table::Migration),
+            Box::new(m20260914_100006_create_game_rounds_table::Migration),
             Box::new(m20260919_100001_add_guest_unique_id_to_users::Migration),
         ]
     }

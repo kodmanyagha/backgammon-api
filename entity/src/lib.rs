@@ -1,5 +1,6 @@
 pub mod game_invites;
 pub mod game_moves;
+pub mod game_rounds;
 pub mod games;
 pub mod permissions;
 pub mod repository;

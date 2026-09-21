@@ -11,22 +11,26 @@ use axum::{
 };
 use serde_json::{json, Value};
 
-use crate::{types::http::api_response::ApiResponse, utils::consts::errors, CONFIG};
+use crate::{
+    service::captcha::CAPTCHA_VERIFICATION_HEADER, types::http::api_response::ApiResponse,
+    utils::consts::errors, CONFIG,
+};
 
 const MAX_LOGGED_RESPONSE_BYTES: usize = 256 * 1024;
 const MAX_LOGGED_BODY_CHARS: usize = 2048;
 const REDACTED_VALUE: &str = "<redacted>";
-const SENSITIVE_KEY_FRAGMENTS: [&str; 6] = [
+const SENSITIVE_KEY_FRAGMENTS: [&str; 9] = [
     "password",
     "token",
     "secret",
     "guest_unique_id",
     "authorization",
     "verifier",
+    "hash",
+    "answer",
+    "question",
 ];
 
-/// Logs every request and JSON response with secrets masked and rejects request bodies
-/// larger than `MAX_REQUEST_BODY_BYTES` with `413 Payload Too Large`.
 pub async fn handle(req: Request, next: Next) -> Response {
     handle_with_body_limit(CONFIG.get_max_request_body_bytes(), req, next).await
 }
@@ -103,12 +107,14 @@ fn is_upgrade_request(req: &Request) -> bool {
         .is_some_and(|value| value.eq_ignore_ascii_case("websocket"))
 }
 
-/// Renders `headers` for logging with credentials (`authorization`, cookies) fully masked.
 fn describe_headers(headers: &HeaderMap) -> String {
     headers
         .iter()
         .map(|(name, value)| {
-            let is_credential = name == AUTHORIZATION || name == COOKIE || name == SET_COOKIE;
+            let is_credential = name == AUTHORIZATION
+                || name == COOKIE
+                || name == SET_COOKIE
+                || name == CAPTCHA_VERIFICATION_HEADER;
             if is_credential {
                 format!("{name}: {REDACTED_VALUE}")
             } else {
@@ -119,8 +125,6 @@ fn describe_headers(headers: &HeaderMap) -> String {
         .join(", ")
 }
 
-/// Renders a body for logging: JSON is printed with sensitive values masked and truncated,
-/// anything else is reduced to its size so unknown payloads never reach the log.
 fn describe_body(body: &[u8]) -> String {
     if body.is_empty() {
         return String::new();
@@ -194,6 +198,18 @@ mod tests {
     }
 
     #[test]
+    fn captcha_images_hashes_and_answers_are_masked_in_bodies() {
+        let body = br#"{"hash":"abc","question":"iVBORw0KGgo","answers":["x","y"],"answer":2,"status":"captcha_verified"}"#;
+
+        let logged = describe_body(body);
+
+        assert!(!logged.contains("iVBORw0KGgo"));
+        assert!(!logged.contains("\"abc\""));
+        assert!(logged.contains("captcha_verified"));
+        assert_eq!(logged.matches(REDACTED_VALUE).count(), 4);
+    }
+
+    #[test]
     fn non_json_bodies_are_reduced_to_their_size() {
         assert_eq!(describe_body(b"password=hunter2"), "<16 bytes, not json>");
         assert_eq!(describe_body(b""), "");
@@ -215,11 +231,14 @@ mod tests {
         headers.insert(AUTHORIZATION, HeaderValue::from_static("Bearer eyJsecret.jwt.value"));
         headers.insert(COOKIE, HeaderValue::from_static("session=abc123"));
         headers.insert("x-app-version", HeaderValue::from_static("1.2.3"));
+        headers.insert(CAPTCHA_VERIFICATION_HEADER, HeaderValue::from_static("d3adb33f"));
 
         let described = describe_headers(&headers);
 
         assert!(!described.contains("eyJsecret"));
         assert!(!described.contains("abc123"));
+        assert!(!described.contains("d3adb33f"));
+        assert!(described.contains("x-captcha-verification: <redacted>"));
         assert!(described.contains("x-app-version: 1.2.3"));
         assert!(described.contains("authorization: <redacted>"));
     }
