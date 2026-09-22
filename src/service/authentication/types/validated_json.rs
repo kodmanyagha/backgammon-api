@@ -10,9 +10,9 @@ use axum::{
 use serde::de::DeserializeOwned;
 use serde_json::json;
 use thiserror::Error;
-use validator::Validate;
+use validator::{Validate, ValidationErrorsKind};
 
-use crate::types::http::api_response::ApiResponse;
+use crate::{types::http::api_response::ApiResponse, utils::consts::errors};
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ValidatedJson<T>(pub T);
@@ -41,25 +41,41 @@ pub enum ValidatedJsonError {
     AxumJsonRejection(#[from] JsonRejection),
 }
 
+fn error_key_for(kind: &ValidationErrorsKind) -> String {
+    match kind {
+        ValidationErrorsKind::Field(field_errors) => field_errors
+            .first()
+            .and_then(|error| error.message.as_deref())
+            .unwrap_or(errors::validation::REQUIRED)
+            .to_string(),
+        ValidationErrorsKind::Struct(_) | ValidationErrorsKind::List(_) => {
+            errors::validation::REQUIRED.to_string()
+        }
+    }
+}
+
 impl IntoResponse for ValidatedJsonError {
     fn into_response(self) -> Response {
         match self {
             ValidatedJsonError::ValidationError(err) => {
                 let response = ApiResponse::new().with_error(
                     err.0
-                        .into_iter()
-                        .map(|(key, val)| (key.to_string(), format!("{:?}", val)))
+                        .iter()
+                        .map(|(key, val)| (key.to_string(), error_key_for(val)))
                         .collect(),
                 );
 
                 (StatusCode::BAD_REQUEST, Json(json!(response)))
             }
-            ValidatedJsonError::AxumJsonRejection(err) => (
-                StatusCode::BAD_REQUEST,
-                Json(json!(
-                    ApiResponse::new().with_global_error(&format!("{err}"))
-                )),
-            ),
+            ValidatedJsonError::AxumJsonRejection(err) => {
+                tracing::warn!(error = %err, "malformed request body");
+                (
+                    StatusCode::BAD_REQUEST,
+                    Json(json!(
+                        ApiResponse::new().with_global_error(errors::INVALID_REQUEST_BODY)
+                    )),
+                )
+            }
         }
         .into_response()
     }

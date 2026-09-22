@@ -52,7 +52,8 @@ fn validate_guest_unique_id(value: &str) -> Result<(), ValidationError> {
     if has_valid_len && has_valid_chars {
         Ok(())
     } else {
-        Err(ValidationError::new("invalid_guest_unique_id"))
+        Err(ValidationError::new("invalid_guest_unique_id")
+            .with_message(errors::validation::INVALID_GUEST_UNIQUE_ID.into()))
     }
 }
 

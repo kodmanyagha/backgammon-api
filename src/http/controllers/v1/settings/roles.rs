@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use axum::{
     extract::{Query, State},
+    http::StatusCode,
     response::{IntoResponse, Response},
     Extension, Json,
 };
@@ -12,7 +13,7 @@ use utoipa::{IntoParams, ToSchema};
 
 use crate::{
     state::app_state::AppState,
-    utils::{datatable::Datatable, merge_json::merge_struct},
+    utils::{datatable::Datatable, error_response::error_key_response, merge_json::merge_struct},
 };
 
 #[derive(Serialize, Deserialize, ToSchema, IntoParams)]
@@ -59,8 +60,8 @@ pub async fn get_index(
 ) -> Result<Response, Response> {
     tracing::info!("Input: {:?}", query_input);
 
-    let query_input: HandleGetQueryInput =
-        serde_json::from_value(query_input).map_err(|err| format!("Err: {err}").into_response())?;
+    let query_input: HandleGetQueryInput = serde_json::from_value(query_input)
+        .map_err(|err| error_key_response(StatusCode::BAD_REQUEST, err))?;
 
     let filter = entity::roles::Entity::find()
         .apply_if(query_input.title.clone(), |query, value| {
@@ -77,7 +78,7 @@ pub async fn get_index(
             .clone()
             .count(&*state.db_conn)
             .await
-            .map_err(|err| format!("Query error: {}", err).into_response())?;
+            .map_err(|err| error_key_response(StatusCode::INTERNAL_SERVER_ERROR, err))?;
 
         let order_dir = match query_input.order_dir.clone().as_str() {
             "asc" => Order::Asc,
@@ -99,7 +100,7 @@ pub async fn get_index(
             .limit(query_input.length)
             .all(&*state.db_conn)
             .await
-            .map_err(|err| format!("Query error: {}", err).into_response())?;
+            .map_err(|err| error_key_response(StatusCode::INTERNAL_SERVER_ERROR, err))?;
 
         crate::utils::datatable::Datatable::new(count, rows)
     };

@@ -59,11 +59,12 @@ macro_rules! datatable {
             .unwrap_or(5)
             .clamp(5, 1000);
 
-        let count = $filter
-            .clone()
-            .count(&*$state.db_conn)
-            .await
-            .map_err(|err| format!("Query error: {}", err).into_response())?;
+        let count = $filter.clone().count(&*$state.db_conn).await.map_err(|err| {
+            $crate::utils::error_response::error_key_response(
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                err,
+            )
+        })?;
 
         let order_dir = match $query_input["order[0][dir]"].as_str().unwrap_or("asc") {
             "asc" => sea_orm::Order::Asc,
@@ -74,7 +75,12 @@ macro_rules! datatable {
         let order_column = if $order_columns.get(input_order_col).is_some() {
             $order_columns
                 .get(input_order_col)
-                .ok_or("Unknown order colur specified".into_response())?
+                .ok_or_else(|| {
+                    $crate::utils::error_response::error_key_response(
+                        axum::http::StatusCode::BAD_REQUEST,
+                        $crate::utils::consts::errors::INVALID_QUERY,
+                    )
+                })?
                 .clone()
         } else {
             $default_col
@@ -87,7 +93,12 @@ macro_rules! datatable {
             .limit(input_length)
             .all(&*$state.db_conn)
             .await
-            .map_err(|err| format!("Query error: {}", err).into_response())?;
+            .map_err(|err| {
+                $crate::utils::error_response::error_key_response(
+                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                    err,
+                )
+            })?;
 
         Ok($crate::utils::datatable::Datatable::new(count, rows))
     }};

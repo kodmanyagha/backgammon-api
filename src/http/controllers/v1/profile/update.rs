@@ -11,6 +11,7 @@ use crate::{
     service::authentication::{types::validated_json::ValidatedJson, update_profile::handle},
     state::app_state::AppState,
     types::http::api_response::ApiResponse,
+    utils::error_response::error_key_response,
 };
 
 #[utoipa::path(
@@ -38,10 +39,6 @@ pub async fn patch_update(
             "is_guest": updated.is_guest,
         }))))
         .into_response(),
-        Err(err) => (
-            StatusCode::BAD_REQUEST,
-            Json(json!(ApiResponse::new().with_global_error(&err.to_string()))),
-        )
-            .into_response(),
+        Err(err) => error_key_response(StatusCode::BAD_REQUEST, err),
     }
 }

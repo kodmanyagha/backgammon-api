@@ -15,9 +15,9 @@ const TOKEN_EXP_HOURS: i64 = 24 * 7;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Validate, ToSchema)]
 pub struct RegisterInputDto {
-    #[validate(email(message = "Invalid email address"))]
+    #[validate(email(message = "error.validation.invalid_email"))]
     pub email: String,
-    #[validate(length(min = 6, message = "Password must be at least 6 characters"))]
+    #[validate(length(min = 6, message = "error.validation.invalid_password_len"))]
     pub password: String,
     pub password_again: String,
     pub username: Option<String>,

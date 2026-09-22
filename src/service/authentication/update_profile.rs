@@ -8,7 +8,7 @@ use crate::{state::app_state::AppState, utils::consts::errors};
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Validate, ToSchema)]
 pub struct UpdateProfileInputDto {
     pub username: Option<String>,
-    #[validate(length(min = 6, message = "Password must be at least 6 characters"))]
+    #[validate(length(min = 6, message = "error.validation.invalid_password_len"))]
     pub password: Option<String>,
     pub password_again: Option<String>,
 }

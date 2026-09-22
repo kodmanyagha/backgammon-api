@@ -11,6 +11,7 @@ use crate::{
     service::authentication::{login::handle, types::validated_json::ValidatedJson},
     state::app_state::AppState,
     types::http::api_response::ApiResponse,
+    utils::error_response::error_key_response,
 };
 
 #[utoipa::path(
@@ -30,10 +31,6 @@ pub async fn post_login(
 ) -> Response {
     match handle(&state, &input).await {
         Ok(result) => Json(json!(ApiResponse::new().with_data(json!(result)))).into_response(),
-        Err(err) => (
-            StatusCode::BAD_REQUEST,
-            Json(json!(ApiResponse::new().with_global_error(&err.to_string()))),
-        )
-            .into_response(),
+        Err(err) => error_key_response(StatusCode::BAD_REQUEST, err),
     }
 }

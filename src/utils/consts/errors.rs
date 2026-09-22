@@ -3,6 +3,9 @@ pub const UNAUTHORIZED: &str = "error.unauthorized";
 pub const USER_NOT_FOUND: &str = "error.user_not_found";
 pub const PARSE_ERROR: &str = "error.parse_error";
 pub const FOLDER_NOT_FOUND: &str = "error.folder_not_found";
+pub const INTERNAL_ERROR: &str = "error.internal";
+pub const INVALID_REQUEST_BODY: &str = "error.invalid_request_body";
+pub const INVALID_QUERY: &str = "error.invalid_query";
 
 pub const MISSING_TOKENS: &str = "error.missing_tokens";
 pub const INVALID_TOKEN: &str = "error.invalid_token";
@@ -24,4 +27,7 @@ pub const CANNOT_ACCEPT_OWN_INVITE: &str = "error.cannot_accept_own_invite";
 
 pub mod validation {
     pub const INVALID_PASSWORD_LEN: &str = "error.validation.invalid_password_len";
+    pub const REQUIRED: &str = "error.validation.required";
+    pub const INVALID_EMAIL: &str = "error.validation.invalid_email";
+    pub const INVALID_GUEST_UNIQUE_ID: &str = "error.validation.invalid_guest_unique_id";
 }

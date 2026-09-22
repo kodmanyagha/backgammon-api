@@ -8,6 +8,7 @@ use serde_json::json;
 
 use crate::{
     service::game::get_game, state::app_state::AppState, types::http::api_response::ApiResponse,
+    utils::error_response::error_key_response,
 };
 
 #[utoipa::path(
@@ -29,10 +30,6 @@ pub async fn get_show(
 ) -> Response {
     match get_game::handle(&state, id, user.id).await {
         Ok(game) => Json(json!(ApiResponse::new().with_data(json!(game)))).into_response(),
-        Err(err) => (
-            StatusCode::BAD_REQUEST,
-            Json(json!(ApiResponse::new().with_global_error(&err.to_string()))),
-        )
-            .into_response(),
+        Err(err) => error_key_response(StatusCode::BAD_REQUEST, err),
     }
 }

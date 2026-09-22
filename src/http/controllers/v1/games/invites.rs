@@ -10,6 +10,7 @@ use crate::{
     service::game::{accept_invite, create_invite, preview_invite},
     state::app_state::AppState,
     types::http::api_response::ApiResponse,
+    utils::error_response::error_key_response,
 };
 
 #[utoipa::path(
@@ -28,11 +29,7 @@ pub async fn post_create(
 ) -> Response {
     match create_invite::handle(&state, user.id).await {
         Ok(result) => Json(json!(ApiResponse::new().with_data(json!(result)))).into_response(),
-        Err(err) => (
-            StatusCode::BAD_REQUEST,
-            Json(json!(ApiResponse::new().with_global_error(&err.to_string()))),
-        )
-            .into_response(),
+        Err(err) => error_key_response(StatusCode::BAD_REQUEST, err),
     }
 }
 
@@ -51,11 +48,7 @@ pub async fn post_create(
 pub async fn get_preview(State(state): State<AppState>, Path(token): Path<String>) -> Response {
     match preview_invite::handle(&state, &token).await {
         Ok(result) => Json(json!(ApiResponse::new().with_data(json!(result)))).into_response(),
-        Err(err) => (
-            StatusCode::BAD_REQUEST,
-            Json(json!(ApiResponse::new().with_global_error(&err.to_string()))),
-        )
-            .into_response(),
+        Err(err) => error_key_response(StatusCode::BAD_REQUEST, err),
     }
 }
 
@@ -80,10 +73,6 @@ pub async fn post_accept(
         Ok(game_id) => {
             Json(json!(ApiResponse::new().with_data(json!({ "game_id": game_id })))).into_response()
         }
-        Err(err) => (
-            StatusCode::BAD_REQUEST,
-            Json(json!(ApiResponse::new().with_global_error(&err.to_string()))),
-        )
-            .into_response(),
+        Err(err) => error_key_response(StatusCode::BAD_REQUEST, err),
     }
 }
