@@ -20,7 +20,7 @@ pub async fn get_index(State(state): State<AppState>) -> Result<Response, Respon
     let datetime = chrono::Local::now();
 
     let ret_data = json!({
-        "api": "blockchain-bot-be",
+        "api": "backgammon-api",
         "datetime": datetime,
         "datetime_utc": datetime.naive_utc(),
     });
