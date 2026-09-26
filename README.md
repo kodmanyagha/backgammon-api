@@ -95,6 +95,11 @@ the very first game is opened by a random side).
   `error` and then a `state` addressed to them alone, so an app that applied the move locally first snaps back to the truth.
 - **The last roll travels with every `state`** (`dice`, `null` before the first roll of a game). A player who joined after
   the opening roll, or missed `dice_rolled`, still sees the real dice (the app plays the roll effect for a fresh join).
+- **A closed-out side never rolls.** When the turn would pass to a side that has a checker on the bar and all six
+  entry points are held by the other side (`Board::turn_is_skipped` in `tavla_core`), the turn stays with the side
+  that just played: both players get `turn_skipped` (`{player}` = the side that was skipped) and then a `state` with
+  the same `current_player` and no dice. The next roll is held for `CLOSED_OUT_HOLD` (2.5 s) so the notice can be
+  read. If both sides are closed out, nobody is skipped and the turns keep alternating.
 - **The app is told whether the opponent is connected.** Every `state` carries `opponent_connected` (plus the live
   `opponent_connected` / `opponent_disconnected` messages). When it is the dropped opponent's turn and the server has
   said nothing for 5 s, the app shows "Cevap bekleniyor" under the opponent's icon with a 70 s countdown; any message

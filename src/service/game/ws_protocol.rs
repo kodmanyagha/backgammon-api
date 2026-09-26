@@ -70,6 +70,9 @@ pub enum ServerMessage {
         die2: u8,
         no_legal_moves: bool,
     },
+    TurnSkipped {
+        player: Player,
+    },
     OpponentConnected,
     OpponentDisconnected,
     AiOffer,
@@ -136,6 +139,13 @@ mod tests {
 
         assert_eq!(serde_json::to_value(ended).unwrap()["mars"], serde_json::json!(true));
         assert_eq!(serde_json::to_value(over).unwrap()["mars"], serde_json::json!(false));
+    }
+
+    #[test]
+    fn a_skipped_turn_names_the_side_that_could_not_roll() {
+        let json = serde_json::to_value(ServerMessage::TurnSkipped { player: Player::Black }).unwrap();
+
+        assert_eq!(json, serde_json::json!({"type": "turn_skipped", "player": "black"}));
     }
 
     #[test]

@@ -91,7 +91,7 @@ mod tests {
                         played += 1;
                     }
                     AiAction::Confirm => {
-                        assert!(matches!(game.confirm_turn(Player::Black), ActionResult::Ok));
+                        assert!(matches!(game.confirm_turn(Player::Black), ActionResult::TurnPassed { closed_out: None }));
                         break;
                     }
                     other => panic!("beklenmeyen aksiyon: {other:?}"),

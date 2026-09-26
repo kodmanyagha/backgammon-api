@@ -27,9 +27,13 @@ const PING_INTERVAL: Duration = Duration::from_secs(10);
 
 const PONG_TIMEOUT: Duration = Duration::from_secs(25);
 
+const WRITE_TIMEOUT: Duration = Duration::from_secs(3);
+
 const TURN_TIME_LIMIT: Duration = Duration::from_secs(62);
 
 const NO_LEGAL_MOVES_HOLD: Duration = Duration::from_millis(3300);
+
+const CLOSED_OUT_HOLD: Duration = Duration::from_millis(2500);
 
 const NEXT_ROUND_DELAY: Duration = Duration::from_secs(5);
 

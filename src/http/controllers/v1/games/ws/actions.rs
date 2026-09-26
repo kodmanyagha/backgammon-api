@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use tavla_core::{Origin, Player};
 
@@ -7,7 +7,7 @@ use super::ai_offer::{accept_ai, decline_ai};
 use super::broadcast::{
     broadcast_game_ended, broadcast_state, broadcast_state_after_move, reject_action, send_error,
 };
-use super::{MatchEnd, NEXT_ROUND_DELAY, NO_LEGAL_MOVES_HOLD, TURN_TIME_LIMIT};
+use super::{MatchEnd, CLOSED_OUT_HOLD, NEXT_ROUND_DELAY, NO_LEGAL_MOVES_HOLD, TURN_TIME_LIMIT};
 use crate::{
     service::game::{
         live_state::now_unix_ms,
@@ -148,7 +148,7 @@ pub(super) async fn play_move(
             finish_round(state, session, game_id, winner, event, last_move).await;
         }
         ActionResult::Err(reason) => reject_action(session, player, reason).await,
-        ActionResult::Ok | ActionResult::Rolled { .. } => {}
+        ActionResult::Ok | ActionResult::TurnPassed { .. } | ActionResult::Rolled { .. } => {}
     }
 }
 
@@ -159,11 +159,21 @@ pub(super) async fn confirm_turn(
     player: Player,
 ) {
     let result = session.game.lock().await.confirm_turn(player);
-    if matches!(result, ActionResult::Ok) {
+    if let ActionResult::TurnPassed { closed_out } = result {
         session.clear_turn_deadline().await;
+        if closed_out.is_some() {
+            session.hold_next_roll_for(CLOSED_OUT_HOLD).await;
+        }
         persist(state, game_id, session, &[]).await;
+        announce_closed_out(session, closed_out).await;
     }
     apply_simple_result(session, player, result).await;
+}
+
+async fn announce_closed_out(session: &Arc<ManagedSession>, closed_out: Option<Player>) {
+    let Some(player) = closed_out else { return };
+    let payload = serde_json::to_string(&ServerMessage::TurnSkipped { player }).unwrap_or_default();
+    session.send_to_both(&payload, &payload).await;
 }
 
 pub(super) async fn roll_dice_and_broadcast(
@@ -177,10 +187,12 @@ pub(super) async fn roll_dice_and_broadcast(
         die1,
         die2,
         no_legal_moves,
+        closed_out,
     } = result
     {
         if no_legal_moves {
-            session.hold_next_roll_for(NO_LEGAL_MOVES_HOLD).await;
+            let closed_out_hold = closed_out.map_or(Duration::ZERO, |_| CLOSED_OUT_HOLD);
+            session.hold_next_roll_for(NO_LEGAL_MOVES_HOLD + closed_out_hold).await;
         } else {
             session
                 .set_turn_deadline(Instant::now() + TURN_TIME_LIMIT)
@@ -194,13 +206,16 @@ pub(super) async fn roll_dice_and_broadcast(
         })
         .unwrap_or_default();
         session.send_to_both(&payload, &payload).await;
+        announce_closed_out(session, closed_out).await;
     }
     apply_simple_result(session, player, result).await;
 }
 
 async fn apply_simple_result(session: &Arc<ManagedSession>, player: Player, result: ActionResult) {
     match result {
-        ActionResult::Ok | ActionResult::Rolled { .. } => broadcast_state(session).await,
+        ActionResult::Ok | ActionResult::TurnPassed { .. } | ActionResult::Rolled { .. } => {
+            broadcast_state(session).await
+        }
         ActionResult::Err(reason) => reject_action(session, player, reason).await,
         ActionResult::MoveApplied { .. } | ActionResult::RoundWon { .. } => {}
     }

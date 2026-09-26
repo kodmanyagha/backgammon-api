@@ -50,7 +50,8 @@ pub enum RoundPhase {
 
 pub enum ActionResult {
     Ok,
-    Rolled { die1: u8, die2: u8, no_legal_moves: bool },
+    TurnPassed { closed_out: Option<Player> },
+    Rolled { die1: u8, die2: u8, no_legal_moves: bool, closed_out: Option<Player> },
     MoveApplied { die: u8, origin_point: Option<u8>, sequence_no: u32, round_no: u16 },
     RoundWon { winner: Player, die: u8, origin_point: Option<u8>, sequence_no: u32, round_no: u16 },
     Err(&'static str),
@@ -196,12 +197,22 @@ impl GameSession {
             .unwrap_or(0);
 
         let no_legal_moves = self.required_moves == 0;
-        if no_legal_moves {
-            self.current_player = self.current_player.opponent();
-            self.remaining_dice.clear();
-        }
+        let closed_out = if no_legal_moves { self.pass_turn() } else { None };
 
-        ActionResult::Rolled { die1: dice.die1, die2: dice.die2, no_legal_moves }
+        ActionResult::Rolled { die1: dice.die1, die2: dice.die2, no_legal_moves, closed_out }
+    }
+
+    fn pass_turn(&mut self) -> Option<Player> {
+        self.move_history.clear();
+        self.remaining_dice.clear();
+        self.required_moves = 0;
+
+        let next = self.current_player.opponent();
+        if self.board.turn_is_skipped(next) {
+            return Some(next);
+        }
+        self.current_player = next;
+        None
     }
 
     pub fn make_move(&mut self, player: Player, origin: Origin, die: u8) -> ActionResult {
@@ -278,12 +289,7 @@ impl GameSession {
             return ActionResult::Err("moves_remaining");
         }
 
-        self.move_history.clear();
-        self.current_player = self.current_player.opponent();
-        self.remaining_dice.clear();
-        self.required_moves = 0;
-
-        ActionResult::Ok
+        ActionResult::TurnPassed { closed_out: self.pass_turn() }
     }
 }
 
@@ -544,14 +550,57 @@ mod tests {
     fn roll_without_any_legal_move_reports_it_and_passes_the_turn() {
         let mut session = blocked_bar_session();
 
-        let ActionResult::Rolled { no_legal_moves, .. } = session.roll_dice(Player::White) else {
+        let ActionResult::Rolled { no_legal_moves, closed_out, .. } = session.roll_dice(Player::White) else {
             panic!("zar atılmalıydı");
         };
 
         assert!(no_legal_moves);
+        assert_eq!(closed_out, None);
         assert_eq!(session.required_moves, 0);
         assert_eq!(session.current_player, Player::Black);
         assert!(session.remaining_dice.is_empty());
+    }
+
+    #[test]
+    fn a_normal_confirm_hands_the_turn_to_the_opponent() {
+        let mut session = GameSession::new(1, 2, Player::White);
+
+        let result = session.confirm_turn(Player::White);
+
+        assert!(matches!(result, ActionResult::TurnPassed { closed_out: None }));
+        assert_eq!(session.current_player, Player::Black);
+    }
+
+    #[test]
+    fn a_closed_out_opponent_does_not_get_to_roll_and_the_turn_comes_straight_back() {
+        let mut session = blocked_bar_session();
+        session.current_player = Player::Black;
+
+        let result = session.confirm_turn(Player::Black);
+
+        assert!(matches!(result, ActionResult::TurnPassed { closed_out: Some(Player::White) }));
+        assert_eq!(session.current_player, Player::Black);
+        assert!(session.remaining_dice.is_empty() && session.move_history.is_empty());
+        assert_eq!(session.required_moves, 0);
+        assert!(matches!(session.roll_dice(Player::White), ActionResult::Err("not_your_turn")));
+        assert!(matches!(session.roll_dice(Player::Black), ActionResult::Rolled { .. }));
+    }
+
+    #[test]
+    fn when_both_sides_are_closed_out_the_turn_still_alternates() {
+        let mut session = blocked_bar_session();
+        let mut board = serde_json::to_value(&session.board).unwrap();
+        for point in 1..=6usize {
+            board["points"][point - 1] = serde_json::json!(2);
+        }
+        board["bar_black"] = serde_json::json!(1);
+        session.board = serde_json::from_value(board).unwrap();
+        session.current_player = Player::Black;
+
+        let result = session.confirm_turn(Player::Black);
+
+        assert!(matches!(result, ActionResult::TurnPassed { closed_out: None }));
+        assert_eq!(session.current_player, Player::White);
     }
 
     #[test]

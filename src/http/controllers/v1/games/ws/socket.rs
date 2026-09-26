@@ -11,7 +11,7 @@ use super::ai_offer::{
     resend_pending_ai_offer, take_back_seat_from_ai, withdraw_ai_offer_after_return,
 };
 use super::broadcast::{broadcast_state, notify_presence, notify_round_countdown};
-use super::{PING_INTERVAL, PONG_TIMEOUT};
+use super::{PING_INTERVAL, PONG_TIMEOUT, WRITE_TIMEOUT};
 use crate::{
     service::game::{sessions::ManagedSession, ws_protocol::ServerMessage},
     state::app_state::AppState,
@@ -22,7 +22,19 @@ enum SocketExit {
     ClientClosed,
     ReadError,
     SendFailed,
+    SendTimedOut,
     PongTimeout,
+}
+
+async fn send_with_timeout(
+    ws_sender: &mut futures_util::stream::SplitSink<WebSocket, Message>,
+    message: Message,
+) -> Result<(), SocketExit> {
+    match tokio::time::timeout(WRITE_TIMEOUT, ws_sender.send(message)).await {
+        Ok(Ok(())) => Ok(()),
+        Ok(Err(_)) => Err(SocketExit::SendFailed),
+        Err(_) => Err(SocketExit::SendTimedOut),
+    }
 }
 
 pub(super) async fn handle_socket(
@@ -54,8 +66,8 @@ pub(super) async fn handle_socket(
             outgoing = rx.recv() => {
                 let Some(text) = outgoing else { break SocketExit::ClientClosed };
                 tracing::info!(game_id, ?player, message = %text, "ws_send");
-                if ws_sender.send(Message::Text(text.into())).await.is_err() {
-                    break SocketExit::SendFailed;
+                if let Err(exit) = send_with_timeout(&mut ws_sender, Message::Text(text.into())).await {
+                    break exit;
                 }
             }
             incoming = ws_receiver.next() => {
@@ -77,8 +89,8 @@ pub(super) async fn handle_socket(
                 if last_pong.elapsed() > PONG_TIMEOUT {
                     break SocketExit::PongTimeout;
                 }
-                if ws_sender.send(Message::Ping(Vec::new().into())).await.is_err() {
-                    break SocketExit::SendFailed;
+                if let Err(exit) = send_with_timeout(&mut ws_sender, Message::Ping(Vec::new().into())).await {
+                    break exit;
                 }
             }
         }
