@@ -10,8 +10,8 @@ use crate::{state::app_state::AppState, CONFIG};
 
 pub async fn create_db_conn() -> anyhow::Result<DatabaseConnection> {
     let mut opt = sea_orm::ConnectOptions::new(CONFIG.get_database_url());
-    opt.max_connections(200)
-        .min_connections(10)
+    opt.max_connections(22)
+        .min_connections(5)
         .connect_timeout(Duration::from_secs(8))
         .acquire_timeout(Duration::from_secs(8))
         .idle_timeout(Duration::from_secs(8))
@@ -30,8 +30,8 @@ pub async fn create_db_conn() -> anyhow::Result<DatabaseConnection> {
 
 pub async fn create_db_conn_pool() -> anyhow::Result<DatabaseConnection> {
     let pool: MySqlPool = MySqlPoolOptions::new()
-        .max_connections(200)
-        .min_connections(50)
+        .max_connections(22)
+        .min_connections(5)
         .acquire_timeout(Duration::from_secs(30))
         .idle_timeout(Duration::from_secs(30))
         .max_lifetime(Duration::from_secs(60))
